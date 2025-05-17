@@ -4,26 +4,19 @@ import src.model.utils.Gem;
 
 import java.util.*;
 
-public record GemBank(Map<Gem, Integer> bank) {
-    public GemBank {
-        Objects.requireNonNull(bank);
-
-        // copie car si on passe une map non mutable le add peut planter
-        Map<Gem,Integer> copy = new EnumMap<>(Gem.class);
-        copy.putAll(bank);
-        bank = copy;
-    }
+public class GemBank {
+    private final EnumMap<Gem, Integer> bank;
 
     public GemBank(int nbPlayers) {
-        this(switch (nbPlayers) {
+        this.bank = switch (nbPlayers) {
             case 2 -> initMap(4);
             case 3 -> initMap(5);
             case 4 -> initMap(7);
             default -> throw new IllegalArgumentException();
-        });
+        };
     }
 
-    private static Map<Gem, Integer> initMap(int nbOtherTokens) {
+    private static EnumMap<Gem, Integer> initMap(int nbOtherTokens) {
         EnumMap<Gem, Integer> init = new EnumMap<>(Gem.class);
         init.put(Gem.RED,    nbOtherTokens);
         init.put(Gem.BLUE,   nbOtherTokens);
@@ -51,7 +44,18 @@ public record GemBank(Map<Gem, Integer> bank) {
         });
     }
 
+    public Map<Gem, Integer> bank() {
+        return Map.copyOf(bank);
+    }
+
     public int get(Gem type) {
         return bank.getOrDefault(type, 0);
+    }
+
+    @Override
+    public String toString() {
+        var sb = new StringBuilder();
+        bank.forEach((gem, number) -> sb.append(gem.name()).append(": ").append(number).append("\n"));
+        return sb.toString();
     }
 }
