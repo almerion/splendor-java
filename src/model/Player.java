@@ -40,7 +40,7 @@ public class Player {
     }
 
     public int getPoints() {
-        return cards.stream().map(c -> c.presigePoints()).reduce(0, Integer::sum)
+        return cards.stream().map(c -> c.prestigePoints()).reduce(0, Integer::sum)
                 + nobles.stream().map(n -> n.prestigePoints()).reduce(0, Integer::sum);
     }
 
