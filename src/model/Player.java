@@ -40,7 +40,6 @@ public class Player {
                 + nobles.stream().map(Noble::prestigePoints).reduce(0, Integer::sum);
     }
 
-
     // Capability checks
     public boolean canReserveCard(Card card) {
         Objects.requireNonNull(card);

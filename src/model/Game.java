@@ -29,6 +29,12 @@ public class Game {
     public void nextTurn() {
         if (gameOver) return;
 
+        board.nobles().forEach(noble -> {
+            if (players.get(currentPlayerIndex).canClaimNoble(noble)) {
+                players.get(currentPlayerIndex).claimNoble(noble);
+            }
+        });
+
         // Quand un joueur atteint 15 points, on laisse le tour de table se finir.
         if (players.get(currentPlayerIndex).getPoints() >= 15) {
             finalRoundPlayerIndex = currentPlayerIndex;

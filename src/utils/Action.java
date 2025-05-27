@@ -27,4 +27,5 @@ public record Action(ActionType type, Map<Gem, Integer> gems, int cardIndex, Lev
     public Action(ActionType type, int cardIndex) {
         this(type, null, cardIndex, null);
     }
+    
 }
