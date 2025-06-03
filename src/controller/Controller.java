@@ -4,6 +4,7 @@ import src.model.Game;
 import src.model.Player;
 import src.model.cards.Card;
 import src.utils.Action;
+import src.utils.IAction;
 import src.view.TerminalView;
 import src.view.View;
 import java.util.Objects;
@@ -34,24 +35,22 @@ public class Controller {
     public void start() {
         while (!game.isGameOver()) {
             view.displayGameState(game);
-            Action action;
-            boolean valid;
+            IAction action;
             do {
                 action = view.readPlayerAction(game.getCurrentPlayer());
-                valid = handleAction(action);
-            } while (!valid);
+            } while (!handleAction(action));
             game.nextTurn();
         }
         view.displayGameState(game);
         view.displayMessage("Fin de la partie ! Vainqueur : Joueur n°" + game.getWinner());
     }
 
-    private boolean handleAction(Action action) {
+    private boolean handleAction(IAction action) {
         Objects.requireNonNull(action);
         Player player = game.getCurrentPlayer();
 
         try {
-            switch (action.type()) {
+            switch (action) {
                 case TAKE -> {
                     player.takeGems(action.gems(), game.board().gemBank());
                 }

@@ -10,7 +10,7 @@ public class Player {
 
     private final ArrayList<Card> cards = new ArrayList<>();
     private final ArrayList<Noble> nobles = new ArrayList<>();
-    private final Map<Gem, Integer> gems = new HashMap<>();
+    private GemBank gems = new GemBank(new EnumMap<>(Gem.class));
     private final ArrayList<Card> reservedCards = new ArrayList<>();
 
     public List<Card> reservedCards() {
@@ -21,14 +21,14 @@ public class Player {
         return List.copyOf(cards);
     }
 
-    public Map<Gem, Integer> gems() {
-        return Map.copyOf(gems);
+    public GemBank gems() {
+        return gems;
     }
 
-    public Map<Gem, Integer> getBonuses() {
+    public GemBank getBonuses() {
         var map = new HashMap<Gem, Integer>();
         cards.forEach(c -> map.merge(c.bonus(), 1, Integer::sum));
-        return Map.copyOf(map);
+        return new GemBank(map);
     }
 
     public List<Noble> nobles() {
@@ -50,35 +50,14 @@ public class Player {
     public boolean canPurchaseCard(Card card) {
         Objects.requireNonNull(card);
 
-        int jokers = gems.getOrDefault(Gem.YELLOW, 0);
-        var bonuses = getBonuses();
-        int neededJokers = 0;
-
-        for (var entry : card.price().entrySet()) {
-            Gem color = entry.getKey();
-            int cost = entry.getValue();
-            int discount = bonuses.getOrDefault(color, 0);
-            int toPay = cost - discount;
-            if (toPay > 0) {
-                int have = gems.getOrDefault(color, 0);
-                if (have < toPay) {
-                    neededJokers += (toPay - have);
-                }
-            }
-        }
-
-        return neededJokers <= jokers;
+        return card.price()
+                .subtractOrZero(getBonuses())
+                .canSubtractBy(this.gems, true);
     }
 
     public boolean canClaimNoble(Noble noble) {
         Objects.requireNonNull(noble);
-        var bool = true;
-        var bonuses = this.getBonuses();
-        for(var c : noble.requiredBonuses().entrySet()) {
-            if (bonuses.get(c.getKey()) < c.getValue())
-                bool = false;
-        }
-        return bool;
+        return noble.requiredBonuses().canSubtractBy(getBonuses(), false);
     }
 
 
@@ -99,29 +78,9 @@ public class Player {
             throw new IllegalArgumentException("La carte " + card.toString() + " ne peut pas être achetée");
         }
 
-        var bonuses = getBonuses();
+        var currentPrice = card.price().subtractOrZero(getBonuses());
         cards.add(card);
-
-        for (var entry : card.price().entrySet()) {
-            var color = entry.getKey();
-            var cost = entry.getValue();
-            var discount = bonuses.getOrDefault(color, 0);
-            var toPay = Math.max(0, cost - discount);
-
-            var fromColor = Math.min(gems.getOrDefault(color, 0), toPay);
-            if (fromColor > 0) {
-                gems.put(color, gems.get(color) - fromColor);
-                bank.add(color, fromColor);
-            }
-
-            var remaining = toPay - fromColor;
-            if (remaining > 0) {
-                var haveJokers = gems.getOrDefault(Gem.YELLOW, 0);
-                var useJokers = Math.min(haveJokers, remaining);
-                gems.put(Gem.YELLOW, haveJokers - useJokers);
-                bank.add(Gem.YELLOW, useJokers);
-            }
-        }
+        this.gems = this.gems.subtract(currentPrice);
     }
 
     public static boolean canTakeGems(Map<Gem,Integer> gemsToTake, GemBank bank) {
@@ -148,6 +107,20 @@ public class Player {
         return false;
     }
 
+    public void addGems(GemBank gemsToAdd) {
+        Objects.requireNonNull(gemsToAdd);
+        this.gems = this.gems.add(gemsToAdd);
+    }
+
+    // this function will be used to remove gems if the player has too much of them, we don't compensate with yellow gems
+    public void removeGems(GemBank gemsToRemove) {
+        Objects.requireNonNull(gemsToRemove);
+        if (!gems.canSubtractBy(gemsToRemove, false)) {
+            throw new IllegalArgumentException("Nombre de gemmes insuffisant pour retirer");
+        }
+        this.gems = this.gems.subtract(gemsToRemove);
+    }
+
     public void takeGems(Map<Gem, Integer> gemsToTake, GemBank bank) {
         Objects.requireNonNull(gemsToTake);
         Objects.requireNonNull(bank);
@@ -158,7 +131,7 @@ public class Player {
 
         for (var g : gemsToTake.entrySet()) {
             gems.merge(g.getKey(), g.getValue(),Integer::sum);
-            bank.remove(g.getKey(), g.getValue());
+            bank.subtract(g.getKey(), g.getValue());
         }
     }
 
@@ -182,7 +155,7 @@ public class Player {
     public String toString() {
         var sb = new StringBuilder();
         sb.append("Gems: ");
-        gems.forEach((gem, number) -> sb.append(gem.name()).append(": ").append(number).append("\n"));
+        sb.append(gems.toString()).append("\n");
         sb.append("Reserved cards: ");
         reservedCards.forEach(card -> sb.append(card.toString()).append(", \n"));
         sb.append("Cards: ");

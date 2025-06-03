@@ -1,13 +1,12 @@
 package src.model.cards;
 
+import src.model.GemBank;
 import src.model.utils.Gem;
 import src.model.utils.Level;
 
-import java.util.EnumMap;
-import java.util.Map;
 import java.util.Objects;
 
-public record Card(Gem bonus, Map<Gem, Integer> price, int prestigePoints, Level level) {
+public record Card(Gem bonus, GemBank price, int prestigePoints, Level level) {
     public Card {
         Objects.requireNonNull(bonus);
         Objects.requireNonNull(price);

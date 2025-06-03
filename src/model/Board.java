@@ -36,7 +36,7 @@ public class Board {
             default:
                 throw new IllegalArgumentException();
         }
-        this.gemBank = new GemBank(numberPlayers);
+        this.gemBank = GemBank.bankFromPlayers(numberPlayers);
         switch (numberPlayers) {
             case 2 -> {
                 cardsShown = 4;
@@ -96,11 +96,10 @@ public class Board {
         var cards = new ArrayList<Card>();
 
         for (Gem gem : Gem.values()) {
-            var price = new EnumMap<Gem, Integer>(Gem.class);
-            price.put(gem, 3);
+            var price = new GemBank(Map.of(gem, 3));
             cards.add(new Card(
                     gem,
-                    Map.copyOf(price),
+                    price,
                     1,
                     Level.ONE
             ));

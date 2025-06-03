@@ -1,12 +1,12 @@
 package src.view;
 
 import src.model.Game;
+import src.model.GemBank;
 import src.model.Player;
 import src.model.utils.BoardType;
 import src.model.utils.Gem;
 import src.model.utils.Level;
-import src.utils.Action;
-import src.utils.ActionType;
+import src.utils.*;
 
 import java.util.EnumMap;
 import java.util.Objects;
@@ -53,11 +53,11 @@ public class TerminalView implements View {
         }
     }
 
-    public Action readPlayerAction(Player player) {
+    public IAction readPlayerAction(Player player) {
         Objects.requireNonNull(player);
         System.out.println("Action (take <red | green ...> | buy <level> <index> | reserve <level> <index> | buy_reserved <index> ): ");
 
-        Action action = null;
+        IAction action = null;
         do {
             String userInput = scanner.nextLine();
             String[] parts = userInput.trim().split("\\s+");
@@ -78,7 +78,7 @@ public class TerminalView implements View {
         return action;
     }
 
-    private Action handleBuyReservedAction(String[] parts) {
+    private IAction handleBuyReservedAction(String[] parts) {
         if (parts.length < 2) {
             System.out.println("Veuillez spécifier l'index de la carte réservée à acheter.");
             return null;
@@ -89,7 +89,7 @@ public class TerminalView implements View {
             try {
                 String userInput = scanner.nextLine();
                 int index = Integer.parseInt(userInput);
-                return new Action(ActionType.BUY_RESERVED, index);
+                return new BuyReservedAction(index);
             } catch (Exception e) {
                 System.out.println("Numéro entré invalide .");
             }
@@ -103,7 +103,7 @@ public class TerminalView implements View {
         System.out.println(message);
     }
 
-    private Action handleReserveAction(String[] parts) {
+    private IAction handleReserveAction(String[] parts) {
         if (parts.length < 3) {
             System.out.println("Veuillez spécifier le niveau et l'index de la carte à réserver.");
             return null;
@@ -118,10 +118,10 @@ public class TerminalView implements View {
             return null;
         }
 
-        return new Action(ActionType.RESERVE, index, level);
+        return new ReserveCardAction(level, index);
     }
 
-    private Action handleBuyAction(String[] parts) {
+    private IAction handleBuyAction(String[] parts) {
         if (parts.length < 3) {
             System.out.println("Veuillez spécifier le niveau et l'index de la carte à acheter.");
             return null;
@@ -136,10 +136,10 @@ public class TerminalView implements View {
             return null;
         }
 
-        return new Action(ActionType.BUY, index, level);
+        return new BuyCardAction(level, index);
     }
 
-    private Action handleTakeAction(String[] parts) {
+    private IAction handleTakeAction(String[] parts) {
         if (parts.length < 2) {
             System.out.println("Veuillez spécifier la couleur de gemme à prendre.");
             return null;
@@ -149,8 +149,6 @@ public class TerminalView implements View {
             gems.merge(Gem.getGemFromColor(parts[i]), 1, Integer::sum);
         }
 
-
-
-        return new Action(ActionType.TAKE, gems);
+        return new TakeGemsAction(new GemBank(gems));
     }
 }

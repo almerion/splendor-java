@@ -1,5 +1,6 @@
 package src.model.utils;
 
+import src.model.GemBank;
 import src.model.cards.Card;
 
 import java.io.IOException;
@@ -62,7 +63,7 @@ public class CardCsvReader {
                 var price = getPrice(cols);
                 Card card = new Card(
                         currentGem,
-                        Map.copyOf(price),
+                        price,
                         prestigePoints,
                         currentLevel
                 );
@@ -79,7 +80,7 @@ public class CardCsvReader {
         return new EnumMap<>(result);
     }
 
-    private static Map<Gem, Integer> getPrice(String[] cols) {
+    private static GemBank getPrice(String[] cols) {
         Map<Gem, Integer> price = new EnumMap<>(Gem.class);
         price.put(Gem.WHITE, parseOrZero(cols[WHITE_COL]));
         price.put(Gem.BLUE, parseOrZero(cols[BLUE_COL]));
@@ -87,7 +88,7 @@ public class CardCsvReader {
         price.put(Gem.RED, parseOrZero(cols[RED_COL]));
         price.put(Gem.BLACK, parseOrZero(cols[BLACK_COL]));
 
-        return price;
+        return new GemBank(price);
     }
 
     private static int parseOrZero(String s) {
