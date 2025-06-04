@@ -11,4 +11,11 @@ public enum Level {
             default -> throw new IllegalArgumentException();
         };
     }
+
+    public static boolean isValidLevel(int level) {
+        return switch (level) {
+            case 1, 2, 3 -> true;
+            default -> false;
+        };
+    }
 }

@@ -11,9 +11,11 @@ import src.utils.*;
 import java.util.EnumMap;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class TerminalView implements View {
     private final Scanner scanner = new Scanner(System.in);
+    private final static Pattern NUMBER_PATTERN = Pattern.compile("\\d+");
 
     public void displayGameState(Game game) {
         Objects.requireNonNull(game);
@@ -28,28 +30,24 @@ public class TerminalView implements View {
     }
 
     public BoardType getBoardType() {
-        BoardType boardType = null;
-        do {
+        while (true) {
             System.out.println("Type de plateau (simple | complet) : ");
             String userInput = scanner.nextLine();
-            try {
-                boardType = BoardType.getBoardTypeFromString(userInput);
-            } catch (IllegalArgumentException e) {
-                System.out.println("Type de plateau invalide, veuillez réessayer.");
+            if (BoardType.isValidBoardType(userInput)) {
+                return BoardType.getBoardTypeFromString(userInput);
             }
-        } while (boardType == null);
-        return boardType;
+            System.out.println("Type de plateau invalide, veuillez réessayer.");
+        }
     }
 
     public int getNumberOfPlayers() {
         while (true) {
-            System.out.println("Nombre de joueurs : ");
-            try {
-                String userInput = scanner.nextLine();
+            System.out.print("Nombre de joueurs : ");
+            var userInput = scanner.nextLine().trim();
+            if (NUMBER_PATTERN.matcher(userInput).matches()) {
                 return Integer.parseInt(userInput);
-            } catch (Exception e) {
-                System.out.println("Nombre de joueurs invalide, veuillez réessayer.");
             }
+            System.out.println("Veuillez entrer un nombre valide.");
         }
     }
 
@@ -62,30 +60,60 @@ public class TerminalView implements View {
             String userInput = scanner.nextLine();
             String[] parts = userInput.trim().split("\\s+");
             String command = parts[0].toLowerCase();
-            try {
-                action = switch (command) {
-                    case "take" -> handleTakeAction(parts);
-                    case "buy" -> handleBuyAction(parts);
-                    case "reserve" -> handleReserveAction(parts);
-                    case "buy_reserved" -> handleBuyReservedAction(parts);
-                    default -> throw new IllegalArgumentException();
-                };
-            } catch (Exception e) {
-                System.out.println("Erreur de saisie, veuillez réessayer.");
-            }
+            action = switch (command) {
+                case "take" -> handleTakeAction(parts);
+                case "buy" -> handleBuyAction(parts);
+                case "reserve" -> handleReserveAction(parts);
+                case "buy_reserved" -> handleBuyReservedAction(parts);
+                default -> {;
+                    System.out.println("Action invalide, veuillez réessayer.");
+                    yield null;
+                }
+            };
         } while (action == null);
 
         return action;
     }
 
-    @Override
     public void invalidActionMessage(Action action) {
         System.out.println("Action invalide, veuillez réessayer.");
     }
 
-    @Override
     public void displayWin(Player player) {
         System.out.println("Fin de la partie ! Vainqueur : " + player);
+    }
+
+    public DropTokensAction readDropTokensAction(Player currentPlayer) {
+        System.out.println("Vous avez trop de jetons, veuillez en déposer.");
+        DropTokensAction action = null;
+        do {
+            System.out.println("Action de dépôt de jetons (drop <red | green ...> <red | green ...) ne pas déposer plus de jetons que nécessaire, pour rappel vous devez en avoir 10 maximum");
+            String userInput = scanner.nextLine();
+            String[] parts = userInput.trim().split("\\s+");
+            action = handleDropTokensAction(parts);
+        }while (action == null);
+        return action;
+    }
+
+    public void invalidNumberOfPlayersMessage(int numberOfPlayers) {
+        System.out.println("Nombre de joueurs invalide : " + numberOfPlayers + ". Veuillez entrer un nombre valide (2-4).");
+    }
+
+    private DropTokensAction handleDropTokensAction(String[] parts) {
+        if (parts.length < 2) {
+            System.out.println("Veuillez spécifier au moins une couleur de gemme à déposer.");
+            return null;
+        }
+        var gemsToDrop = new EnumMap<Gem, Integer>(Gem.class);
+        for (int i = 1; i < parts.length; i++) {
+            if (!Gem.isValidGem(parts[i])) {
+                System.out.println("Couleur de gemme invalide : " + parts[i]);
+                return null;
+            }
+            Gem gem = Gem.getGemFromColor(parts[i]);
+            gemsToDrop.merge(gem, 1, Integer::sum);
+        }
+        return new DropTokensAction(new GemBank(gemsToDrop));
     }
 
     private Action handleBuyReservedAction(String[] parts) {
@@ -94,16 +122,12 @@ public class TerminalView implements View {
             return null;
         }
 
-        while (true) {
-            System.out.println("Nombre de joueurs : ");
-            try {
-                String userInput = scanner.nextLine();
-                int index = Integer.parseInt(userInput);
-                return new BuyReservedAction(index);
-            } catch (Exception e) {
-                System.out.println("Numéro entré invalide .");
-            }
+        if (!NUMBER_PATTERN.matcher(parts[1]).matches()) {
+            System.out.println("Index invalide, veuillez entrer un nombre.");
+            return null;
         }
+        var index = Integer.parseInt(parts[1]);
+        return new BuyReservedAction(index);
     }
 
     private Action handleReserveAction(String[] parts) {
@@ -111,15 +135,16 @@ public class TerminalView implements View {
             System.out.println("Veuillez spécifier le niveau et l'index de la carte à réserver.");
             return null;
         }
-        Level level;
-        int index;
-        try {
-            level = Level.getLevelFromInt(Integer.parseInt(parts[1]));
-            index = Integer.parseInt(parts[2]);
-        } catch (NumberFormatException e) {
+        if (!NUMBER_PATTERN.matcher(parts[1]).matches() || !NUMBER_PATTERN.matcher(parts[2]).matches()) {
             System.out.println("Veuillez spécifier un niveau et un index valides.");
             return null;
         }
+        if (!Level.isValidLevel(Integer.parseInt(parts[1]))) {
+            System.out.println("Niveau invalide, veuillez entrer un niveau de carte valide.");
+            return null;
+        }
+        var level = Level.getLevelFromInt(Integer.parseInt(parts[1]));
+        var index = Integer.parseInt(parts[2]);
 
         return new ReserveCardAction(level, index);
     }
@@ -129,15 +154,18 @@ public class TerminalView implements View {
             System.out.println("Veuillez spécifier le niveau et l'index de la carte à acheter.");
             return null;
         }
-        Level level;
-        int index;
-        try {
-            level = Level.getLevelFromInt(Integer.parseInt(parts[1]));
-            index = Integer.parseInt(parts[2]);
-        } catch (NumberFormatException e) {
+
+        if (!NUMBER_PATTERN.matcher(parts[1]).matches() || !NUMBER_PATTERN.matcher(parts[2]).matches()) {
             System.out.println("Veuillez spécifier un niveau et un index valides.");
             return null;
         }
+        if (!Level.isValidLevel(Integer.parseInt(parts[1]))) {
+            System.out.println("Niveau invalide, veuillez entrer un niveau de carte valide.");
+            return null;
+        }
+
+        var level = Level.getLevelFromInt(Integer.parseInt(parts[1]));
+        var index = Integer.parseInt(parts[2]);
 
         return new BuyCardAction(level, index);
     }
@@ -149,6 +177,10 @@ public class TerminalView implements View {
         }
         var gems = new EnumMap<Gem, Integer>(Gem.class);
         for (int i = 1; i < parts.length; i++) {
+            if (!Gem.isValidGem(parts[i])) {
+                System.out.println("Couleur de gemme invalide : " + parts[i]);
+                return null;
+            }
             gems.merge(Gem.getGemFromColor(parts[i]), 1, Integer::sum);
         }
 

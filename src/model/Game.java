@@ -13,21 +13,28 @@ public class Game {
     private int finalRoundPlayerIndex;
     private boolean gameOver;
 
-    public Game(int nbPlayers, BoardType boardType) {
-        if (nbPlayers < 1 || nbPlayers > 4) throw new IllegalArgumentException();
-        currentPlayerIndex = 0;
-        gameOver = false;
-        finalRoundPlayerIndex = -1;
-        players = new ArrayList<>();
-        board = new Board(nbPlayers, boardType);
-
-        for (int i = 0; i < nbPlayers; i++) {
-            players.add(new Player());
+    public Game(Board board, List<Player> players, int currentPlayerIndex, int finalRoundPlayerIndex, boolean gameOver) {
+        Objects.requireNonNull(board);
+        Objects.requireNonNull(players);
+        if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) {
+            throw new IllegalArgumentException("Index du joueur courant invalide");
         }
+        if (finalRoundPlayerIndex < -1 || finalRoundPlayerIndex >= players.size()) {
+            throw new IllegalArgumentException("Index du joueur de la dernière manche invalide");
+        }
+        this.board = board;
+        this.players = new ArrayList<>(players);
+        this.currentPlayerIndex = currentPlayerIndex;
+        this.finalRoundPlayerIndex = finalRoundPlayerIndex;
+        this.gameOver = gameOver;
     }
 
     public void nextTurn() {
         if (gameOver) return;
+
+        if (currentPlayerHasTooManyGems()) {
+            throw new IllegalStateException("Le joueur courant a trop de gemmes.");
+        }
 
         board.nobles().forEach(noble -> {
             if (players.get(currentPlayerIndex).canClaimNoble(noble)) {
@@ -69,7 +76,7 @@ public class Game {
             case BuyCardAction buy -> isValidBuyCardAction(buy);
             case BuyReservedAction buyReserved -> isValidBuyReservedAction(buyReserved);
             case TakeGemsAction takeGems -> isValidTakeGemsAction(takeGems);
-            case ReserveCardAction reserveCard -> board.boardType() == BoardType.COMPLETE && isValidReserveCardAction(reserveCard);
+            case ReserveCardAction reserveCard -> board.boardType() == BoardType.COMPLET && isValidReserveCardAction(reserveCard);
             case DropTokensAction dropTokens -> isValidDropTokensAction(dropTokens);
         };
     }
@@ -166,7 +173,11 @@ public class Game {
     private boolean isValidDropTokensAction(DropTokensAction dropTokens) {
         Objects.requireNonNull(dropTokens);
         var currentPlayer = getCurrentPlayer();
-
+        var currentNumberOfGems = currentPlayer.gems().getBank().values().stream().mapToInt(Integer::intValue).sum();
+        var numberOfGemsToDrop = dropTokens.gemBank().getBank().values().stream().mapToInt(Integer::intValue).sum();
+        if (currentNumberOfGems - numberOfGemsToDrop < 0 || currentNumberOfGems - numberOfGemsToDrop > 10) {
+            return false;
+        }
         return currentPlayer.gems().canSubtractBy(dropTokens.gemBank(), false);
     }
 
@@ -250,8 +261,36 @@ public class Game {
         return currentPlayer.canPurchaseCard(reservedCard);
     }
 
+    public boolean currentPlayerHasTooManyGems() {
+        var currentPlayer = getCurrentPlayer();
+        var gems = currentPlayer.gems();
+        return gems.getBank().values().stream().mapToInt(Integer::intValue).sum() > 10;
+    }
+
     public boolean isGameOver() {
         return gameOver;
+    }
+
+    public static Game createGame(int nbPlayers, BoardType boardType) {
+        if (!isValidNumberOfPlayers(nbPlayers)) {
+            throw new IllegalArgumentException("Nombre de joueurs invalide : " + nbPlayers);
+        }
+        if (nbPlayers < 1 || nbPlayers > 4) throw new IllegalArgumentException();
+        var currentPlayerIndex = 0;
+        var gameOver = false;
+        var finalRoundPlayerIndex = -1;
+        var players = new ArrayList<Player>();
+        var board = Board.createBoard(nbPlayers, boardType);
+
+        for (int i = 0; i < nbPlayers; i++) {
+            players.add(Player.createEmptyPlayer());
+        }
+
+        return new Game(board, players, currentPlayerIndex, finalRoundPlayerIndex, gameOver);
+    }
+
+    public static boolean isValidNumberOfPlayers(int nbPlayers) {
+        return nbPlayers >= 2 && nbPlayers <= 4;
     }
 
     @Override

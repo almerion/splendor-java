@@ -2,10 +2,7 @@ package src.model;
 
 import src.model.cards.Card;
 import src.model.cards.Noble;
-import src.model.utils.BoardType;
-import src.model.utils.CardCsvReader;
-import src.model.utils.Gem;
-import src.model.utils.Level;
+import src.model.utils.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +10,8 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Board {
-    private final Path cardsPath = Paths.get("src", "ressources", "cards.csv");
+    private static final Path CARDS_PATH = Paths.get("src", "ressources", "cards.csv");
+    private static final Path NOBLES_PATH = Paths.get("src", "ressources", "nobles.csv");
     private final EnumMap<Level, List<Card>> cardRows;
     private final List<Noble> nobles;
     private GemBank gemBank;
@@ -21,39 +19,23 @@ public class Board {
     private final int cardsShown;
     private final int noblesShown;
 
-    public Board(int numberPlayers, BoardType boardType)  {
+    public Board(EnumMap<Level, List<Card>> cardRows, List<Noble> nobles, GemBank gemBank, BoardType boardType, int cardsShown, int noblesShown) {
+        Objects.requireNonNull(cardRows);
+        Objects.requireNonNull(nobles);
+        Objects.requireNonNull(gemBank);
+        Objects.requireNonNull(boardType);
+        this.cardRows = cardRows;
+        this.nobles = nobles;
+        this.gemBank = gemBank;
         this.boardType = boardType;
-        switch (boardType) {
-            case SIMPLE:
-                nobles = List.of();
-                cardRows = initializeSimpleCardRows();
-                break;
-            case COMPLETE:
-                if (!Files.isRegularFile(cardsPath)) {
-                    throw new IllegalStateException(cardsPath.toString() + " file not found");
-                }
-                nobles = initializeNobles();
-                cardRows = CardCsvReader.loadCards(cardsPath);
-                break;
-            default:
-                throw new IllegalArgumentException();
+        if (cardsShown < 0) {
+            throw new IllegalArgumentException("Invalid number of cards shown: " + cardsShown);
         }
-        this.gemBank = GemBank.bankFromPlayers(numberPlayers);
-        switch (numberPlayers) {
-            case 2 -> {
-                cardsShown = 4;
-                noblesShown = 3;
-            }
-            case 3 -> {
-                cardsShown = 5;
-                noblesShown = 4;
-            }
-            case 4 -> {
-                cardsShown = 5;
-                noblesShown = 5;
-            }
-            default -> throw new IllegalArgumentException();
+        this.cardsShown = cardsShown;
+        if (noblesShown < 0) {
+            throw new IllegalArgumentException("Invalid number of nobles shown: " + noblesShown);
         }
+        this.noblesShown = noblesShown;
     }
 
     public Map<Level, List<Card>> cardRows() {
@@ -98,7 +80,7 @@ public class Board {
         return noblesShown;
     }
 
-    private EnumMap<Level, List<Card>> initializeSimpleCardRows() {
+    private static EnumMap<Level, List<Card>> initializeSimpleCardRows() {
         var cards = new ArrayList<Card>();
 
         for (Gem gem : Gem.values()) {
@@ -131,96 +113,51 @@ public class Board {
         this.gemBank = gemBank.subtract(gems);
     }
 
-    public static List<Noble> initializeNobles() {
-        var noblesList = new ArrayList<Noble>(List.of(
-                new Noble(
-                        new GemBank(new HashMap<Gem, Integer>(Map.of(
-                                Gem.GREEN,3,
-                                Gem.BLUE,3,
-                                Gem.RED,3
-                        ))),
-                        3,
-                        "Catherine de' Medici"
-                ),
-                new Noble(
-                        new GemBank(new HashMap<Gem, Integer>(Map.of(
-                                Gem.BLACK,3,
-                                Gem.BLUE,3,
-                                Gem.WHITE,3
-                        ))),
-                        3,
-                        "Elisabeth Of Austria"
-                ),
-                new Noble(
-                        new GemBank(new HashMap<Gem, Integer>(Map.of(
-                                Gem.BLACK,4,
-                                Gem.WHITE,4
-                        ))),
-                        3,
-                        "Isabella I Of Castile"
-                ),
-                new Noble(
-                        new GemBank(new HashMap<Gem, Integer>(Map.of(
-                                Gem.BLUE,4,
-                                Gem.WHITE,4
-                        ))),
-                        3,
-                        "Niccolò Machiavelli"
-                ),
-                new Noble(
-                        new GemBank(new HashMap<Gem, Integer>(Map.of(
-                                Gem.BLUE,4,
-                                Gem.GREEN,4
-                        ))),
-                        3,
-                        "Suleiman The Magnificent"
-                ),
-                new Noble(
-                        new GemBank(new HashMap<Gem, Integer>(Map.of(
-                                Gem.GREEN,3,
-                                Gem.BLUE,3,
-                                Gem.WHITE,3
-                        ))),
-                        3,
-                        "Anne Of Brittany"
-                ),
-                new Noble(
-                        new GemBank(new HashMap<Gem, Integer>(Map.of(
-                                Gem.BLACK,3,
-                                Gem.RED,3,
-                                Gem.WHITE,3
-                        ))),
-                        3,
-                        "Charles V"
-                ),
-                new Noble(
-                        new GemBank(new HashMap<Gem, Integer>(Map.of(
-                                Gem.BLACK,3,
-                                Gem.RED,3,
-                                Gem.GREEN,3
-                        ))),
-                        3,
-                        "Francis I Of France"
-                ),
-                new Noble(
-                        new GemBank(new HashMap<Gem, Integer>(Map.of(
-                                Gem.BLACK,4,
-                                Gem.RED,4
-                        ))),
-                        3,
-                        "Henry VII"
-                ),
-                new Noble(
-                        new GemBank(new HashMap<Gem, Integer>(Map.of(
-                                Gem.RED,4,
-                                Gem.GREEN,4
-                        ))),
-                        3,
-                        "Mary Stuart"
-                )
-                ));
-        Collections.shuffle(noblesList);
-        return noblesList;
+    public static Board createBoard(int numberPlayers, BoardType boardType) {
+        Objects.requireNonNull(boardType);
+        if (numberPlayers < 2 || numberPlayers > 4) {
+            throw new IllegalArgumentException("Number of players must be between 2 and 4");
+        }
+
+        List<Noble> nobles;
+        EnumMap<Level, List<Card>> cardRows;
+        GemBank gemBank;
+        int cardsShown, noblesShown;
+        switch (boardType) {
+            case SIMPLE:
+                nobles = List.of();
+                cardRows = initializeSimpleCardRows();
+                break;
+            case COMPLET:
+                if (!Files.isRegularFile(CARDS_PATH)) {
+                    throw new IllegalStateException(CARDS_PATH.toString() + " file not found");
+                }
+                if (!Files.isRegularFile(NOBLES_PATH)) {
+                    throw new IllegalStateException(NOBLES_PATH.toString() + " file not found");
+                }
+                nobles = NobleCsvReader.loadNobles(NOBLES_PATH);
+                cardRows = CardCsvReader.loadCards(CARDS_PATH);
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+        gemBank = GemBank.bankFromPlayers(numberPlayers);
+        switch (numberPlayers) {
+            case 2 -> {
+                cardsShown = 4;
+                noblesShown = 3;
+            }
+            case 3 -> {
+                cardsShown = 5;
+                noblesShown = 4;
+            }
+            case 4 -> {
+                cardsShown = 5;
+                noblesShown = 5;
+            }
+            default -> throw new IllegalArgumentException();
+        }
+        return new Board(cardRows, nobles, gemBank, boardType, cardsShown, noblesShown);
     }
 
     @Override

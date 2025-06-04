@@ -8,8 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class CardCsvReader {
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+");
     private static final int LEVEL_COL = 0;
     private static final int GEM_COLOR_COL = 1;
     private static final int PRESTIGE_COL = 2;
@@ -45,9 +47,15 @@ public class CardCsvReader {
                 String[] cols = line.split(",", -1);
 
                 if (!cols[CardCsvReader.LEVEL_COL].isBlank()) {
+                    if (!Level.isValidLevel(Integer.parseInt(cols[CardCsvReader.LEVEL_COL]))) {
+                        throw new IllegalArgumentException("Invalid level: " + cols[CardCsvReader.LEVEL_COL]);
+                    }
                     currentLevel = Level.getLevelFromInt(Integer.parseInt(cols[CardCsvReader.LEVEL_COL]));
                 }
                 if (!cols[CardCsvReader.GEM_COLOR_COL].isBlank()) {
+                    if (!Gem.isValidGem(cols[CardCsvReader.GEM_COLOR_COL])) {
+                        throw new IllegalArgumentException("Invalid gem color: " + cols[CardCsvReader.GEM_COLOR_COL]);
+                    }
                     currentGem = Gem.getGemFromColor(cols[CardCsvReader.GEM_COLOR_COL]);
                 }
                 if (!cols[CardCsvReader.ILLUSTRATION_COL].isBlank()) {
@@ -92,11 +100,8 @@ public class CardCsvReader {
     }
 
     private static int parseOrZero(String s) {
-        if (s == null || s.isBlank()) return 0;
-        try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
+        if (s == null || s.isBlank() || !NUMBER_PATTERN.matcher(s).matches())
             return 0;
-        }
+        return Integer.parseInt(s);
     }
 }

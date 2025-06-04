@@ -7,12 +7,35 @@ import src.model.utils.Gem;
 import java.util.*;
 
 public class Player {
-
+    private static final int MAX_RESERVED_CARDS = 3;
     private final ArrayList<Card> cards = new ArrayList<>();
     private final ArrayList<Noble> nobles = new ArrayList<>();
     private GemBank gems = new GemBank(new EnumMap<>(Gem.class));
     private final ArrayList<Card> reservedCards = new ArrayList<>();
 
+    public Player(ArrayList<Card> cards, ArrayList<Noble> nobles, GemBank gems, ArrayList<Card> reservedCards) {
+        Objects.requireNonNull(cards);
+        Objects.requireNonNull(nobles);
+        Objects.requireNonNull(gems);
+        Objects.requireNonNull(reservedCards);
+
+        this.cards.addAll(cards);
+        this.nobles.addAll(nobles);
+        this.gems = gems;
+        this.reservedCards.addAll(reservedCards);
+
+        if (reservedCards.size() > MAX_RESERVED_CARDS) {
+            throw new IllegalArgumentException("Too many reserved cards");
+        }
+    }
+    public static Player createEmptyPlayer() {
+        return new Player(
+                new ArrayList<Card>(),
+                new ArrayList<Noble>(),
+                new GemBank(new EnumMap<>(Gem.class)),
+                new ArrayList<Card>()
+        );
+    }
     public List<Card> reservedCards() {
         return List.copyOf(reservedCards);
     }
@@ -37,14 +60,14 @@ public class Player {
     }
 
     public int getPoints() {
-        return cards.stream().map(Card::prestigePoints).reduce(0, Integer::sum)
-                + nobles.stream().map(Noble::prestigePoints).reduce(0, Integer::sum);
+        return cards.stream().mapToInt(Card::prestigePoints).sum()
+                + nobles.stream().mapToInt(Noble::prestigePoints).sum();
     }
 
     // Capability checks
     public boolean canReserveCard(Card card) {
         Objects.requireNonNull(card);
-        return reservedCards.size() < 3;
+        return reservedCards.size() < MAX_RESERVED_CARDS;
     }
 
     public boolean canPurchaseCard(Card card) {
@@ -83,6 +106,20 @@ public class Player {
             throw new IllegalArgumentException();
         }
         reservedCards.remove(index);
+    }
+
+    public boolean canClaimNoble(Noble noble) {
+        Objects.requireNonNull(noble);
+        return noble.requiredBonuses().canSubtractBy(getBonuses(), false);
+    }
+
+    public void claimNoble(Noble noble) {
+        Objects.requireNonNull(noble);
+        if (!canClaimNoble(noble)) {
+            throw new IllegalArgumentException("Pas assez de bonus pour réclamer ce noble");
+        }
+
+        nobles.add(noble);
     }
 
     @Override
