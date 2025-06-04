@@ -38,10 +38,6 @@ public class Board {
         this.noblesShown = noblesShown;
     }
 
-    public Map<Level, List<Card>> cardRows() {
-        return Map.copyOf(cardRows);
-    }
-
     public  BoardType boardType() {
         return boardType;
     }
@@ -70,14 +66,6 @@ public class Board {
 
     public GemBank gemBank() {
         return gemBank;
-    }
-
-    public int cardsShown() {
-        return cardsShown;
-    }
-
-    public int noblesShown() {
-        return noblesShown;
     }
 
     private static EnumMap<Level, List<Card>> initializeSimpleCardRows() {
@@ -130,10 +118,10 @@ public class Board {
                 break;
             case COMPLET:
                 if (!Files.isRegularFile(CARDS_PATH)) {
-                    throw new IllegalStateException(CARDS_PATH.toString() + " file not found");
+                    throw new IllegalStateException(CARDS_PATH + " file not found");
                 }
                 if (!Files.isRegularFile(NOBLES_PATH)) {
-                    throw new IllegalStateException(NOBLES_PATH.toString() + " file not found");
+                    throw new IllegalStateException(NOBLES_PATH + " file not found");
                 }
                 nobles = NobleCsvReader.loadNobles(NOBLES_PATH);
                 cardRows = CardCsvReader.loadCards(CARDS_PATH);

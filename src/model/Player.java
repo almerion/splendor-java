@@ -8,10 +8,10 @@ import java.util.*;
 
 public class Player {
     private static final int MAX_RESERVED_CARDS = 3;
-    private final ArrayList<Card> cards = new ArrayList<>();
-    private final ArrayList<Noble> nobles = new ArrayList<>();
-    private GemBank gems = new GemBank(new EnumMap<>(Gem.class));
-    private final ArrayList<Card> reservedCards = new ArrayList<>();
+    private final ArrayList<Card> cards;
+    private final ArrayList<Noble> nobles;
+    private GemBank gems;
+    private final ArrayList<Card> reservedCards;
 
     public Player(ArrayList<Card> cards, ArrayList<Noble> nobles, GemBank gems, ArrayList<Card> reservedCards) {
         Objects.requireNonNull(cards);
@@ -19,23 +19,23 @@ public class Player {
         Objects.requireNonNull(gems);
         Objects.requireNonNull(reservedCards);
 
-        this.cards.addAll(cards);
-        this.nobles.addAll(nobles);
-        this.gems = gems;
-        this.reservedCards.addAll(reservedCards);
-
         if (reservedCards.size() > MAX_RESERVED_CARDS) {
             throw new IllegalArgumentException("Too many reserved cards");
         }
+
+        this.cards = new ArrayList<>(cards);
+        this.nobles = new ArrayList<>(nobles);
+        this.reservedCards = new ArrayList<>(reservedCards);
     }
     public static Player createEmptyPlayer() {
         return new Player(
-                new ArrayList<Card>(),
-                new ArrayList<Noble>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
                 new GemBank(new EnumMap<>(Gem.class)),
-                new ArrayList<Card>()
+                new ArrayList<>()
         );
     }
+
     public List<Card> reservedCards() {
         return List.copyOf(reservedCards);
     }

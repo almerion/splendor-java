@@ -25,8 +25,8 @@ public class TerminalView implements View {
                 .append("Tour du joueur n° ")
                 .append(game.currentPlayerIndex())
                 .append("\n")
-                .append(game.toString());
-        System.out.println(currentStateStringBuilder.toString());
+                .append(game);
+        System.out.println(currentStateStringBuilder);
     }
 
     public BoardType getBoardType() {
@@ -55,7 +55,7 @@ public class TerminalView implements View {
         Objects.requireNonNull(player);
         System.out.println("Action (take <red | green ...> | buy <level> <index> | reserve <level> <index> | buy_reserved <index> ): ");
 
-        Action action = null;
+        Action action;
         do {
             String userInput = scanner.nextLine();
             String[] parts = userInput.trim().split("\\s+");
@@ -65,7 +65,7 @@ public class TerminalView implements View {
                 case "buy" -> handleBuyAction(parts);
                 case "reserve" -> handleReserveAction(parts);
                 case "buy_reserved" -> handleBuyReservedAction(parts);
-                default -> {;
+                default -> {
                     System.out.println("Action invalide, veuillez réessayer.");
                     yield null;
                 }
@@ -85,7 +85,7 @@ public class TerminalView implements View {
 
     public DropTokensAction readDropTokensAction(Player currentPlayer) {
         System.out.println("Vous avez trop de jetons, veuillez en déposer.");
-        DropTokensAction action = null;
+        DropTokensAction action;
         do {
             System.out.println("Action de dépôt de jetons (drop <red | green ...> <red | green ...) ne pas déposer plus de jetons que nécessaire, pour rappel vous devez en avoir 10 maximum");
             String userInput = scanner.nextLine();
