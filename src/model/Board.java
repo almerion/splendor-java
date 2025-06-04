@@ -32,7 +32,7 @@ public class Board {
                 if (!Files.isRegularFile(cardsPath)) {
                     throw new IllegalStateException(cardsPath.toString() + " file not found");
                 }
-                nobles = List.of();
+                nobles = initializeNobles();
                 cardRows = CardCsvReader.loadCards(cardsPath);
                 break;
             default:
@@ -131,6 +131,98 @@ public class Board {
         this.gemBank = gemBank.subtract(gems);
     }
 
+    public static List<Noble> initializeNobles() {
+        var noblesList = new ArrayList<Noble>(List.of(
+                new Noble(
+                        new GemBank(new HashMap<Gem, Integer>(Map.of(
+                                Gem.GREEN,3,
+                                Gem.BLUE,3,
+                                Gem.RED,3
+                        ))),
+                        3,
+                        "Catherine de' Medici"
+                ),
+                new Noble(
+                        new GemBank(new HashMap<Gem, Integer>(Map.of(
+                                Gem.BLACK,3,
+                                Gem.BLUE,3,
+                                Gem.WHITE,3
+                        ))),
+                        3,
+                        "Elisabeth Of Austria"
+                ),
+                new Noble(
+                        new GemBank(new HashMap<Gem, Integer>(Map.of(
+                                Gem.BLACK,4,
+                                Gem.WHITE,4
+                        ))),
+                        3,
+                        "Isabella I Of Castile"
+                ),
+                new Noble(
+                        new GemBank(new HashMap<Gem, Integer>(Map.of(
+                                Gem.BLUE,4,
+                                Gem.WHITE,4
+                        ))),
+                        3,
+                        "Niccolò Machiavelli"
+                ),
+                new Noble(
+                        new GemBank(new HashMap<Gem, Integer>(Map.of(
+                                Gem.BLUE,4,
+                                Gem.GREEN,4
+                        ))),
+                        3,
+                        "Suleiman The Magnificent"
+                ),
+                new Noble(
+                        new GemBank(new HashMap<Gem, Integer>(Map.of(
+                                Gem.GREEN,3,
+                                Gem.BLUE,3,
+                                Gem.WHITE,3
+                        ))),
+                        3,
+                        "Anne Of Brittany"
+                ),
+                new Noble(
+                        new GemBank(new HashMap<Gem, Integer>(Map.of(
+                                Gem.BLACK,3,
+                                Gem.RED,3,
+                                Gem.WHITE,3
+                        ))),
+                        3,
+                        "Charles V"
+                ),
+                new Noble(
+                        new GemBank(new HashMap<Gem, Integer>(Map.of(
+                                Gem.BLACK,3,
+                                Gem.RED,3,
+                                Gem.GREEN,3
+                        ))),
+                        3,
+                        "Francis I Of France"
+                ),
+                new Noble(
+                        new GemBank(new HashMap<Gem, Integer>(Map.of(
+                                Gem.BLACK,4,
+                                Gem.RED,4
+                        ))),
+                        3,
+                        "Henry VII"
+                ),
+                new Noble(
+                        new GemBank(new HashMap<Gem, Integer>(Map.of(
+                                Gem.RED,4,
+                                Gem.GREEN,4
+                        ))),
+                        3,
+                        "Mary Stuart"
+                )
+                ));
+        Collections.shuffle(noblesList);
+        return noblesList;
+    }
+
     @Override
     public String toString() {
         var sb = new StringBuilder();
@@ -140,7 +232,7 @@ public class Board {
             rows.stream().limit(cardsShown).forEach(card -> sb.append(card.toString()).append(", \n"));
         });
         sb.append("Nobles : \n");
-        nobles.forEach(noble -> sb.append(noble.toString()).append(", \n"));
+        nobles.stream().limit(noblesShown).forEach(noble -> sb.append(noble.toString()).append(", \n"));
         sb.append("État de la banque : \n").append(gemBank.toString()).append("\n");
         return sb.toString();
     }

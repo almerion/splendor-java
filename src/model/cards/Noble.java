@@ -6,9 +6,10 @@ import src.model.utils.Gem;
 import java.util.Objects;
 
 // We consider the bonuses as a gemBank so the required bonuses can also be represented as a GemBank.
-public record Noble(GemBank requiredBonuses, int prestigePoints) {
+public record Noble(GemBank requiredBonuses, int prestigePoints, String name) {
     public Noble {
         Objects.requireNonNull(requiredBonuses);
+        Objects.requireNonNull(name);
         if (requiredBonuses.get(Gem.YELLOW) != 0) {
             throw new IllegalArgumentException("Les nobles ne peuvent pas avoir de bonus jaune");
         }
