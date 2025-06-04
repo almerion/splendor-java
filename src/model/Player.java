@@ -25,14 +25,15 @@ public class Player {
         return gems;
     }
 
+    public void addCard(Card card) {
+        Objects.requireNonNull(card);
+        cards.add(card);
+    }
+
     public GemBank getBonuses() {
         var map = new HashMap<Gem, Integer>();
         cards.forEach(c -> map.merge(c.bonus(), 1, Integer::sum));
         return new GemBank(map);
-    }
-
-    public List<Noble> nobles() {
-        return List.copyOf(nobles);
     }
 
     public int getPoints() {
@@ -50,18 +51,11 @@ public class Player {
     public boolean canPurchaseCard(Card card) {
         Objects.requireNonNull(card);
 
-        return card.price()
-                .subtractOrZero(getBonuses())
-                .canSubtractBy(this.gems, true);
-    }
-
-    public boolean canClaimNoble(Noble noble) {
-        Objects.requireNonNull(noble);
-        return noble.requiredBonuses().canSubtractBy(getBonuses(), false);
+        var cardPriceWithBonuses = card.price().subtractOrZero(getBonuses());
+        return this.gems.canSubtractBy(cardPriceWithBonuses, true);
     }
 
 
-    // Actions
     public void reserveCard(Card card) {
         Objects.requireNonNull(card);
         if (canReserveCard(card)) {
@@ -69,42 +63,6 @@ public class Player {
         } else {
             throw new IllegalArgumentException("Cannot reserve card");
         }
-    }
-
-    public void purchaseCard(Card card, GemBank bank) {
-        Objects.requireNonNull(card);
-        Objects.requireNonNull(bank);
-        if (!canPurchaseCard(card)) {
-            throw new IllegalArgumentException("La carte " + card.toString() + " ne peut pas être achetée");
-        }
-
-        var currentPrice = card.price().subtractOrZero(getBonuses());
-        cards.add(card);
-        this.gems = this.gems.subtract(currentPrice);
-    }
-
-    public static boolean canTakeGems(Map<Gem,Integer> gemsToTake, GemBank bank) {
-        Objects.requireNonNull(gemsToTake);
-        Objects.requireNonNull(bank);
-        if (gemsToTake.getOrDefault(Gem.YELLOW, 0) > 0) {
-            return false;
-        }
-        int total = gemsToTake.values().stream().mapToInt(Integer::intValue).sum();
-
-        if (total == 3) {
-            if (gemsToTake.size() != 3) return false;
-            if (gemsToTake.values().stream().anyMatch(v -> v != 1)) return false;
-            return gemsToTake.entrySet().stream()
-                    .allMatch(e -> bank.get(e.getKey()) >= 1);
-        }
-
-        else if (total == 2) {
-            if (gemsToTake.size() != 1) return false;
-            var gem = gemsToTake.keySet().iterator().next();
-            return bank.get(gem) >= 4;
-        }
-
-        return false;
     }
 
     public void addGems(GemBank gemsToAdd) {
@@ -119,29 +77,6 @@ public class Player {
             throw new IllegalArgumentException("Nombre de gemmes insuffisant pour retirer");
         }
         this.gems = this.gems.subtract(gemsToRemove);
-    }
-
-    public void takeGems(Map<Gem, Integer> gemsToTake, GemBank bank) {
-        Objects.requireNonNull(gemsToTake);
-        Objects.requireNonNull(bank);
-
-        if (!canTakeGems(gemsToTake, bank)) {
-            throw new IllegalArgumentException("Nombre de gemmes invalide");
-        }
-
-        for (var g : gemsToTake.entrySet()) {
-            gems.merge(g.getKey(), g.getValue(),Integer::sum);
-            bank.subtract(g.getKey(), g.getValue());
-        }
-    }
-
-    public void claimNoble(Noble noble) {
-        Objects.requireNonNull(noble);
-        if (canClaimNoble(noble)) {
-            nobles.add(noble);
-        } else  {
-            throw new IllegalArgumentException();
-        }
     }
 
     public void removeReservedCard(int index) {

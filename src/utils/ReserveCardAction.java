@@ -4,7 +4,7 @@ import src.model.utils.Level;
 
 import java.util.Objects;
 
-public record ReserveCardAction(Level cardLevel, int cardIndex) implements IAction {
+public record ReserveCardAction(Level cardLevel, int cardIndex) implements Action {
     public ReserveCardAction {
         Objects.requireNonNull(cardLevel);
         if (cardIndex < 0) {

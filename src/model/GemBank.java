@@ -32,6 +32,10 @@ public class GemBank {
         ));
     }
 
+    public Map<Gem, Integer> getBank() {
+        return Map.copyOf(bank);
+    }
+
     public GemBank add(GemBank bank) {
         Objects.requireNonNull(bank);
 
@@ -93,7 +97,7 @@ public class GemBank {
             }
         }
 
-        return this.get(Gem.YELLOW) > requiredYellowGems;
+        return this.get(Gem.YELLOW) >= requiredYellowGems;
     }
 
     public int get(Gem type) {

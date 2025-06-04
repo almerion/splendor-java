@@ -4,7 +4,7 @@ import src.model.utils.Level;
 
 import java.util.Objects;
 
-public record BuyCardAction(Level cardLevel, int cardIndex) implements IAction {
+public record BuyCardAction(Level cardLevel, int cardIndex) implements Action {
     public BuyCardAction {
         Objects.requireNonNull(cardLevel);
         if (cardIndex < 0) {

@@ -53,11 +53,11 @@ public class TerminalView implements View {
         }
     }
 
-    public IAction readPlayerAction(Player player) {
+    public Action readPlayerAction(Player player) {
         Objects.requireNonNull(player);
         System.out.println("Action (take <red | green ...> | buy <level> <index> | reserve <level> <index> | buy_reserved <index> ): ");
 
-        IAction action = null;
+        Action action = null;
         do {
             String userInput = scanner.nextLine();
             String[] parts = userInput.trim().split("\\s+");
@@ -78,7 +78,17 @@ public class TerminalView implements View {
         return action;
     }
 
-    private IAction handleBuyReservedAction(String[] parts) {
+    @Override
+    public void invalidActionMessage(Action action) {
+        System.out.println("Action invalide, veuillez réessayer.");
+    }
+
+    @Override
+    public void displayWin(Player player) {
+        System.out.println("Fin de la partie ! Vainqueur : " + player);
+    }
+
+    private Action handleBuyReservedAction(String[] parts) {
         if (parts.length < 2) {
             System.out.println("Veuillez spécifier l'index de la carte réservée à acheter.");
             return null;
@@ -96,14 +106,7 @@ public class TerminalView implements View {
         }
     }
 
-    @Override
-    public void displayMessage(String message) {
-        Objects.requireNonNull(message);
-
-        System.out.println(message);
-    }
-
-    private IAction handleReserveAction(String[] parts) {
+    private Action handleReserveAction(String[] parts) {
         if (parts.length < 3) {
             System.out.println("Veuillez spécifier le niveau et l'index de la carte à réserver.");
             return null;
@@ -121,7 +124,7 @@ public class TerminalView implements View {
         return new ReserveCardAction(level, index);
     }
 
-    private IAction handleBuyAction(String[] parts) {
+    private Action handleBuyAction(String[] parts) {
         if (parts.length < 3) {
             System.out.println("Veuillez spécifier le niveau et l'index de la carte à acheter.");
             return null;
@@ -139,7 +142,7 @@ public class TerminalView implements View {
         return new BuyCardAction(level, index);
     }
 
-    private IAction handleTakeAction(String[] parts) {
+    private Action handleTakeAction(String[] parts) {
         if (parts.length < 2) {
             System.out.println("Veuillez spécifier la couleur de gemme à prendre.");
             return null;

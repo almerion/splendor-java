@@ -16,11 +16,13 @@ public class Board {
     private final Path cardsPath = Paths.get("src", "ressources", "cards.csv");
     private final EnumMap<Level, List<Card>> cardRows;
     private final List<Noble> nobles;
-    private final GemBank gemBank;
+    private GemBank gemBank;
+    private final BoardType boardType;
     private final int cardsShown;
     private final int noblesShown;
 
     public Board(int numberPlayers, BoardType boardType)  {
+        this.boardType = boardType;
         switch (boardType) {
             case SIMPLE:
                 nobles = List.of();
@@ -58,10 +60,14 @@ public class Board {
         return Map.copyOf(cardRows);
     }
 
+    public  BoardType boardType() {
+        return boardType;
+    }
+
     public Card getCard(Level level, int index) {
         Objects.requireNonNull(level);
         if (index < 0 || index > cardsShown || index >= cardRows.get(level).size()) {
-            throw new IllegalArgumentException();
+            return null;
         }
 
         return cardRows.get(level).get(index);
@@ -110,6 +116,19 @@ public class Board {
                 Level.TWO, List.of(),
                 Level.THREE, List.of()
         ));
+    }
+
+    public void addGems(GemBank gems) {
+        Objects.requireNonNull(gems);
+        this.gemBank = gemBank.add(gems);
+    }
+
+    public void removeGems(GemBank gems) {
+        Objects.requireNonNull(gems);
+        if (!gemBank.canSubtractBy(gems, false)) {
+            throw new IllegalArgumentException("Not enough gems in the bank to remove");
+        }
+        this.gemBank = gemBank.subtract(gems);
     }
 
     @Override

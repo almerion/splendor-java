@@ -1,13 +1,9 @@
 package src.controller;
 
 import src.model.Game;
-import src.model.Player;
-import src.model.cards.Card;
 import src.utils.Action;
-import src.utils.IAction;
 import src.view.TerminalView;
 import src.view.View;
-import java.util.Objects;
 
 public class Controller {
     private final Game game;
@@ -35,51 +31,20 @@ public class Controller {
     public void start() {
         while (!game.isGameOver()) {
             view.displayGameState(game);
-            IAction action;
+            Action action;
+            var isValid = false;
             do {
                 action = view.readPlayerAction(game.getCurrentPlayer());
-            } while (!handleAction(action));
+                if (!game.isValidAction(action)) {
+                    view.invalidActionMessage(action);
+                } else {
+                    isValid = true;
+                }
+            } while (!isValid);
+            game.handleAction(action);
             game.nextTurn();
         }
-        view.displayGameState(game);
-        view.displayMessage("Fin de la partie ! Vainqueur : Joueur n°" + game.getWinner());
-    }
 
-    private boolean handleAction(IAction action) {
-        Objects.requireNonNull(action);
-        Player player = game.getCurrentPlayer();
-
-        try {
-            switch (action) {
-                case TAKE -> {
-                    player.takeGems(action.gems(), game.board().gemBank());
-                }
-                case BUY -> {
-                    var lvl = action.cardLevel();
-                    int idx = action.cardIndex();
-
-                    var card = game.board().getCard(lvl,idx);
-                    player.purchaseCard(card, game.board().gemBank());
-                    game.board().removeCard(lvl, idx);
-                }
-                case RESERVE -> {
-                    var lvl = action.cardLevel();
-                    int idx = action.cardIndex();
-                    Card card = game.board().getCard(lvl,idx);
-                    player.reserveCard(card);
-                    game.board().removeCard(lvl, idx);
-                }
-                case BUY_RESERVED -> {
-                    var reservedCard = player.reservedCards().get(action.cardIndex());
-                    player.purchaseCard(reservedCard, game.board().gemBank());
-                    player.removeReservedCard(action.cardIndex());
-                }
-                default -> throw new IllegalArgumentException("Action inconnue");
-            }
-            return true;
-        } catch (IllegalArgumentException e) {
-            view.displayMessage("Action invalide: " + e.getMessage());
-            return false;
-        }
+        view.displayWin(game.getWinner());
     }
 }
