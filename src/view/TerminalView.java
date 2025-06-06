@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 public class TerminalView implements View {
     private final Scanner scanner = new Scanner(System.in);
-    private final static Pattern NUMBER_PATTERN = Pattern.compile("\\d+");
+    public final static Pattern NUMBER_PATTERN = Pattern.compile("\\d+");
 
     public void displayGameState(Game game) {
         Objects.requireNonNull(game);

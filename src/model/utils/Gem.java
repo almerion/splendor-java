@@ -1,7 +1,20 @@
 package src.model.utils;
 
+import java.awt.*;
+
 public enum Gem {
     GREEN, WHITE, BLUE, BLACK, RED, YELLOW;
+
+    public Color color() {
+        return switch (this) {
+            case GREEN -> Color.GREEN;
+            case WHITE -> Color.WHITE;
+            case BLUE -> Color.BLUE;
+            case BLACK -> Color.BLACK;
+            case RED -> Color.RED;
+            case YELLOW -> Color.YELLOW;
+        };
+    }
 
     public static Gem getGemFromColor(String color) {
         if (!Gem.isValidGem(color)) {

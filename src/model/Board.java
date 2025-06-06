@@ -38,8 +38,25 @@ public class Board {
         this.noblesShown = noblesShown;
     }
 
-    public  BoardType boardType() {
+    public BoardType boardType() {
         return boardType;
+    }
+
+    public int cardsShown() {
+        return cardsShown;
+    }
+
+    public int noblesShown() {
+        return noblesShown;
+    }
+
+    public Map<Level, List<Card>> cardRows() {
+        var copy = new EnumMap<Level, List<Card>>(Level.class);
+        for (var entry : cardRows.entrySet()) {
+            copy.put(entry.getKey(), entry.getValue().stream().limit(cardsShown).toList());
+        }
+
+        return Map.copyOf(copy);
     }
 
     public Card getCard(Level level, int index) {
@@ -61,7 +78,7 @@ public class Board {
     }
 
     public List<Noble> nobles() {
-        return nobles;
+        return nobles.stream().limit(noblesShown).toList();
     }
 
     public GemBank gemBank() {
@@ -71,7 +88,10 @@ public class Board {
     private static EnumMap<Level, List<Card>> initializeSimpleCardRows() {
         var cards = new ArrayList<Card>();
 
-        for (Gem gem : Gem.values()) {
+        for (var gem : Gem.values()) {
+            if (gem == Gem.YELLOW) {
+                continue; // Skip yellow gem for simple board
+            }
             var price = new GemBank(Map.of(gem, 3));
             cards.add(new Card(
                     gem,

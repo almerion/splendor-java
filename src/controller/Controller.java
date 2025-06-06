@@ -1,10 +1,12 @@
 package src.controller;
 
+import com.github.forax.zen.ApplicationContext;
 import src.model.Game;
 import src.utils.Action;
 import src.utils.DropTokensAction;
 import src.view.TerminalView;
 import src.view.View;
+import src.view.zenView.ZenView;
 
 import java.util.Objects;
 
@@ -59,8 +61,24 @@ public class Controller {
         game.handleAction(dropAction);
     }
 
-    public static Controller createController() {
+    public static Controller createTerminalController() {
         var view = new TerminalView();
+        var boardType = view.getBoardType();
+        int numberOfPlayers;
+
+        while (true) {
+            numberOfPlayers = view.getNumberOfPlayers();
+            if (Game.isValidNumberOfPlayers(numberOfPlayers)) {
+                var game = Game.createGame(numberOfPlayers, boardType);
+                return new Controller(game, view);
+            }
+            view.invalidNumberOfPlayersMessage(numberOfPlayers);
+        }
+    }
+
+    public static Controller createZenController(ApplicationContext ctx) {
+        Objects.requireNonNull(ctx);
+        var view = new ZenView(ctx);
         var boardType = view.getBoardType();
         int numberOfPlayers;
 

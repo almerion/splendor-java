@@ -29,6 +29,14 @@ public class Game {
         this.gameOver = gameOver;
     }
 
+    public Board board() {
+        return board;
+    }
+
+    public List<Player> players() {
+        return List.copyOf(players);
+    }
+
     public void nextTurn() {
         if (gameOver) return;
 

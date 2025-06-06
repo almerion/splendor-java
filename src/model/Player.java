@@ -26,6 +26,7 @@ public class Player {
         this.cards = new ArrayList<>(cards);
         this.nobles = new ArrayList<>(nobles);
         this.reservedCards = new ArrayList<>(reservedCards);
+        this.gems = gems;
     }
     public static Player createEmptyPlayer() {
         return new Player(
