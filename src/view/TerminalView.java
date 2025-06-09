@@ -51,8 +51,8 @@ public class TerminalView implements View {
         }
     }
 
-    public Action readPlayerAction(Player player) {
-        Objects.requireNonNull(player);
+    public Action readPlayerAction(Game game) {
+        Objects.requireNonNull(game);
         System.out.println("Action (take <red | green ...> | buy <level> <index> | reserve <level> <index> | buy_reserved <index> ): ");
 
         Action action;
@@ -79,8 +79,9 @@ public class TerminalView implements View {
         System.out.println("Action invalide, veuillez réessayer.");
     }
 
-    public void displayWin(Player player) {
-        System.out.println("Fin de la partie ! Vainqueur : " + player);
+    public void displayWin(Game game) {
+        Objects.requireNonNull(game);
+        System.out.println("Fin de la partie ! Vainqueur : Joueur n° " + (game.getWinnerIndex() + 1));
     }
 
     public DropTokensAction readDropTokensAction(Player currentPlayer) {

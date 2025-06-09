@@ -87,18 +87,19 @@ public class Board {
 
     private static EnumMap<Level, List<Card>> initializeSimpleCardRows() {
         var cards = new ArrayList<Card>();
-
-        for (var gem : Gem.values()) {
-            if (gem == Gem.YELLOW) {
-                continue; // Skip yellow gem for simple board
+        for (var i = 0; i < 8; i++) {
+            for (var gem : Gem.values()) {
+                if (gem == Gem.YELLOW) {
+                    continue; // Skip yellow gem for simple board
+                }
+                var price = new GemBank(Map.of(gem, 3));
+                cards.add(new Card(
+                        gem,
+                        price,
+                        1,
+                        Level.ONE
+                ));
             }
-            var price = new GemBank(Map.of(gem, 3));
-            cards.add(new Card(
-                    gem,
-                    price,
-                    1,
-                    Level.ONE
-            ));
         }
         Collections.shuffle(cards);
         return new EnumMap<>(Map.of(

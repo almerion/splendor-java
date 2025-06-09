@@ -32,7 +32,7 @@ public class Player {
         return new Player(
                 new ArrayList<>(),
                 new ArrayList<>(),
-                new GemBank(new EnumMap<>(Gem.class)),
+                new GemBank(Map.of(Gem.GREEN, 11)),
                 new ArrayList<>()
         );
     }
@@ -111,7 +111,7 @@ public class Player {
 
     public boolean canClaimNoble(Noble noble) {
         Objects.requireNonNull(noble);
-        return noble.requiredBonuses().canSubtractBy(getBonuses(), false);
+        return getBonuses().canSubtractBy(noble.requiredBonuses(), false);
     }
 
     public void claimNoble(Noble noble) {

@@ -25,14 +25,16 @@ public class Controller {
         Action action;
         var isValid = false;
         do {
-            action = view.readPlayerAction(game.getCurrentPlayer());
+            action = view.readPlayerAction(game);
             if (!game.isValidAction(action)) {
                 view.invalidActionMessage(action);
+                view.displayGameState(game);
             } else {
                 isValid = true;
             }
         } while (!isValid);
         game.handleAction(action);
+        view.displayGameState(game);
     }
 
     public void start() {
@@ -43,7 +45,7 @@ public class Controller {
             game.nextTurn();
         }
 
-        view.displayWin(game.getWinner());
+        view.displayWin(game);
     }
 
     private void handlePlayerTooManyGems() {
@@ -56,6 +58,7 @@ public class Controller {
                 isValid = true;
             } else {
                 view.invalidActionMessage(dropAction);
+                view.displayGameState(game);
             }
         }while (!isValid);
         game.handleAction(dropAction);

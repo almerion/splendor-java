@@ -51,7 +51,7 @@ public class Game {
         });
 
         // Quand un joueur atteint 15 points, on laisse le tour de table se finir.
-        if (players.get(currentPlayerIndex).getPoints() >= 15) {
+        if (players.get(currentPlayerIndex).getPoints() >= 15 && finalRoundPlayerIndex == -1) {
             finalRoundPlayerIndex = currentPlayerIndex;
         }
 
@@ -62,12 +62,14 @@ public class Game {
         }
     }
 
-    public Player getWinner() {
-        if (!gameOver) return null;
-        return players.stream()
+    public int getWinnerIndex() {
+        if (!gameOver) return -1;
+        var winner = players.stream()
                 .filter(player -> player.getPoints() >= 15)
                 .min(Comparator.comparingInt(player -> player.cards().size()))
                 .orElse(null);
+
+        return winner != null ? players.indexOf(winner) : -1;
     }
 
     public Player getCurrentPlayer() {

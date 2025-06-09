@@ -10,9 +10,9 @@ public interface View {
     void displayGameState(Game game);
     BoardType getBoardType();
     int getNumberOfPlayers();
-    Action readPlayerAction(Player player);
+    Action readPlayerAction(Game game);
     void invalidActionMessage(Action action);
-    void displayWin(Player winner);
+    void displayWin(Game game);
     DropTokensAction readDropTokensAction(Player currentPlayer);
     void invalidNumberOfPlayersMessage(int numberOfPlayers);
 }

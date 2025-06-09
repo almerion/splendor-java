@@ -3,7 +3,6 @@ package src.view.zenView;
 import com.github.forax.zen.ApplicationContext;
 import com.github.forax.zen.PointerEvent;
 
-import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 
