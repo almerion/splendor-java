@@ -47,6 +47,7 @@ public class Game {
         board.nobles().forEach(noble -> {
             if (players.get(currentPlayerIndex).canClaimNoble(noble)) {
                 players.get(currentPlayerIndex).claimNoble(noble);
+                board.removeNoble(noble);
             }
         });
 
@@ -116,7 +117,7 @@ public class Game {
         if (!currentPlayer.gems().canSubtractBy(gemsToDrop, false)) {
             throw new IllegalArgumentException("Le joueur ne peut pas déposer les gemmes : " + drop);
         }
-        currentPlayer.removeGems(gemsToDrop);
+        currentPlayer.removeGems(gemsToDrop, false);
         board.addGems(gemsToDrop);
     }
 
@@ -174,8 +175,10 @@ public class Game {
         if (!currentPlayer.gems().canSubtractBy(cardPriceWithBonuses, true)) {
             throw new IllegalArgumentException("Le joueur ne peut pas acheter la carte réservée : " + reservedCard);
         }
-        currentPlayer.removeGems(cardPriceWithBonuses);
-        board.addGems(cardPriceWithBonuses);
+
+        var currentGemsToRemove = currentPlayer.gems().gemsToSpend(cardPriceWithBonuses);
+        currentPlayer.removeGems(currentGemsToRemove, false);
+        board.addGems(currentGemsToRemove);
         currentPlayer.addCard(reservedCard);
         currentPlayer.removeReservedCard(cardIndex);
     }
@@ -253,8 +256,9 @@ public class Game {
             throw new IllegalArgumentException("Le joueur ne peut pas acheter la carte : " + buyCardAction);
         }
 
-        currentPlayer.removeGems(cardPriceWithBonuses);
-        board.addGems(cardPriceWithBonuses);
+        var currentGemsToRemove = currentPlayer.gems().gemsToSpend(cardPriceWithBonuses);
+        currentPlayer.removeGems(currentGemsToRemove, false);
+        board.addGems(currentGemsToRemove);
         board.removeCard(buyCardAction.cardLevel(), buyCardAction.cardIndex());
         currentPlayer.addCard(card);
     }
@@ -274,7 +278,7 @@ public class Game {
     public boolean currentPlayerHasTooManyGems() {
         var currentPlayer = getCurrentPlayer();
         var gems = currentPlayer.gems();
-        return gems.getBank().values().stream().mapToInt(Integer::intValue).sum() > 10;
+        return false && gems.getBank().values().stream().mapToInt(Integer::intValue).sum() > 10;
     }
 
     public boolean isGameOver() {

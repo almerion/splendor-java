@@ -1,8 +1,10 @@
 package src.view.zenView.game;
 
 import src.model.Board;
+import src.model.cards.Card;
 import src.model.cards.Noble;
 import src.model.utils.Gem;
+import src.model.utils.Level;
 import src.view.zenView.UiUtils;
 
 import java.awt.*;
@@ -48,16 +50,17 @@ public class BoardView {
         var cardWidth = container.width / board.cardsShown();
         var cardHeight = (container.height) / 5;
 
-        for (var entry : cardRows.entrySet()) {
-            var cards = entry.getValue();
-            if (cards.isEmpty()) {
-                continue;
-            }
-            for (var card : cards) {
+
+        for (Level level : Level.values()) {
+            List<Card> cards = cardRows.get(level);
+            if (cards == null || cards.isEmpty()) continue;
+
+            for (Card card : cards) {
                 Rectangle cardRect = new Rectangle(xOffset, yOffset, cardWidth, cardHeight);
                 UiUtils.drawCard(g2d, cardRect, card);
                 xOffset += cardWidth;
             }
+
             xOffset = container.x;
             yOffset += cardHeight;
         }

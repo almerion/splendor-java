@@ -1,7 +1,7 @@
 package src.model.utils;
 
 public enum Level {
-    ONE,TWO,THREE;
+    THREE, TWO, ONE;
 
     public static Level getLevelFromInt(int level) {
         return switch (level) {

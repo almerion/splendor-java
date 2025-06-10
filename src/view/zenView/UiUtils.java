@@ -93,8 +93,24 @@ public class UiUtils {
         g2d.setColor(Color.BLACK);
         g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 
+        // draw number of prestige
+        g2d.setColor(Color.GRAY);
+        FontMetrics fm = g2d.getFontMetrics();
+        String prestige = String.valueOf(noble.prestigePoints());
+        int textX = rect.x + (rect.width - fm.stringWidth(prestige));
+        int textY = rect.y + fm.getAscent();
+        g2d.drawString(prestige, textX, textY);
+
         var priceEntries = noble.requiredBonuses().getBank().entrySet();
-        drawGemsVerticallyHidingZero(g2d, rect, priceEntries);
+        var gemWidth = rect.width / (Gem.values().length - 1);
+        var gemRect = new Rectangle(
+                rect.x + rect.width - gemWidth,
+                rect.y + fm.getHeight(),
+                gemWidth,
+                rect.height - fm.getHeight()
+        );
+
+        drawGemsVerticallyHidingZero(g2d, gemRect, priceEntries);
 
         centerTextInRect(g2d, noble.name(), rect);
     }

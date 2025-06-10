@@ -47,6 +47,23 @@ public class GemBank {
         return new GemBank(Map.copyOf(newMap));
     }
 
+    public GemBank gemsToSpend(GemBank costBank) {
+        Objects.requireNonNull(costBank);
+        if (!this.canSubtractBy(costBank, true)) {
+            throw new IllegalArgumentException("Nombre de gemmes insuffisantes pour soustraire");
+        }
+
+        GemBank remaining = subtractInternal(costBank, true);
+
+        EnumMap<Gem, Integer> spentMap = new EnumMap<>(Gem.class);
+        for (Gem gem : Gem.values()) {
+            int spent = this.get(gem) - remaining.get(gem);
+            spentMap.put(gem, spent);
+        }
+
+        return new GemBank(spentMap);
+    }
+
     public GemBank subtract(GemBank bank) {
         Objects.requireNonNull(bank);
         if (!this.canSubtractBy(bank, true)) {

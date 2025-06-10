@@ -32,7 +32,7 @@ public class Player {
         return new Player(
                 new ArrayList<>(),
                 new ArrayList<>(),
-                new GemBank(Map.of(Gem.GREEN, 11)),
+                new GemBank(new EnumMap<>(Gem.class)),
                 new ArrayList<>()
         );
     }
@@ -93,10 +93,9 @@ public class Player {
         this.gems = this.gems.add(gemsToAdd);
     }
 
-    // this function will be used to remove gems if the player has too much of them, we don't compensate with yellow gems
-    public void removeGems(GemBank gemsToRemove) {
+    public void removeGems(GemBank gemsToRemove, boolean compensateWithYellow) {
         Objects.requireNonNull(gemsToRemove);
-        if (!gems.canSubtractBy(gemsToRemove, false)) {
+        if (!gems.canSubtractBy(gemsToRemove, compensateWithYellow)) {
             throw new IllegalArgumentException("Nombre de gemmes insuffisant pour retirer");
         }
         this.gems = this.gems.subtract(gemsToRemove);

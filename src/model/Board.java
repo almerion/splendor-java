@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Board {
     private static final Path CARDS_PATH = Paths.get("src", "ressources", "cards.csv");
@@ -132,24 +133,6 @@ public class Board {
         EnumMap<Level, List<Card>> cardRows;
         GemBank gemBank;
         int cardsShown, noblesShown;
-        switch (boardType) {
-            case SIMPLE:
-                nobles = List.of();
-                cardRows = initializeSimpleCardRows();
-                break;
-            case COMPLET:
-                if (!Files.isRegularFile(CARDS_PATH)) {
-                    throw new IllegalStateException(CARDS_PATH + " file not found");
-                }
-                if (!Files.isRegularFile(NOBLES_PATH)) {
-                    throw new IllegalStateException(NOBLES_PATH + " file not found");
-                }
-                nobles = NobleCsvReader.loadNobles(NOBLES_PATH);
-                cardRows = CardCsvReader.loadCards(CARDS_PATH);
-                break;
-            default:
-                throw new IllegalArgumentException();
-        }
         gemBank = GemBank.bankFromPlayers(numberPlayers);
         switch (numberPlayers) {
             case 2 -> {
@@ -166,6 +149,24 @@ public class Board {
             }
             default -> throw new IllegalArgumentException();
         }
+        switch (boardType) {
+            case SIMPLE:
+                nobles = List.of();
+                cardRows = initializeSimpleCardRows();
+                break;
+            case COMPLET:
+                if (!Files.isRegularFile(CARDS_PATH)) {
+                    throw new IllegalStateException(CARDS_PATH + " file not found");
+                }
+                if (!Files.isRegularFile(NOBLES_PATH)) {
+                    throw new IllegalStateException(NOBLES_PATH + " file not found");
+                }
+                nobles = NobleCsvReader.loadNobles(NOBLES_PATH).stream().limit(noblesShown).collect(Collectors.toList());
+                cardRows = CardCsvReader.loadCards(CARDS_PATH);
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
         return new Board(cardRows, nobles, gemBank, boardType, cardsShown, noblesShown);
     }
 
@@ -181,5 +182,13 @@ public class Board {
         nobles.stream().limit(noblesShown).forEach(noble -> sb.append(noble.toString()).append(", \n"));
         sb.append("État de la banque : \n").append(gemBank.toString()).append("\n");
         return sb.toString();
+    }
+
+    public void removeNoble(Noble noble) {
+        Objects.requireNonNull(noble);
+        if (!nobles.contains(noble) || nobles.indexOf(noble) >= noblesShown) {
+            throw new IllegalArgumentException("Noble not shown on the board");
+        }
+        nobles.remove(noble);
     }
 }
