@@ -11,8 +11,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Board {
-    private static final Path CARDS_PATH = Paths.get("src", "ressources", "cards.csv");
-    private static final Path NOBLES_PATH = Paths.get("src", "ressources", "nobles.csv");
+    private static final String CARDS_FILE_NAME = "cards.csv";
+    private static final String NOBLES_FILE_NAME = "nobles.csv";
     private final EnumMap<Level, List<Card>> cardRows;
     private final List<Noble> nobles;
     private GemBank gemBank;
@@ -155,14 +155,8 @@ public class Board {
                 cardRows = initializeSimpleCardRows();
                 break;
             case COMPLET:
-                if (!Files.isRegularFile(CARDS_PATH)) {
-                    throw new IllegalStateException(CARDS_PATH + " file not found");
-                }
-                if (!Files.isRegularFile(NOBLES_PATH)) {
-                    throw new IllegalStateException(NOBLES_PATH + " file not found");
-                }
-                nobles = NobleCsvReader.loadNobles(NOBLES_PATH).stream().limit(noblesShown).collect(Collectors.toList());
-                cardRows = CardCsvReader.loadCards(CARDS_PATH);
+                nobles = NobleCsvReader.loadNobles(NOBLES_FILE_NAME).stream().limit(noblesShown).collect(Collectors.toList());
+                cardRows = CardCsvReader.loadCards(CARDS_FILE_NAME);
                 break;
             default:
                 throw new IllegalArgumentException();

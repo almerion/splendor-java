@@ -3,7 +3,9 @@ package src.model.utils;
 import src.model.GemBank;
 import src.model.cards.Noble;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,14 +22,18 @@ public class NobleCsvReader {
     private static final int WHITE_COL = 5;
     private static final int BLACK_COL = 6;
 
-    public static List<Noble> loadNobles(Path filePath) {
-        if (!Files.isRegularFile(filePath)) {
-            throw new IllegalArgumentException("Path does not point to a regular file: " + filePath);
+    public static List<Noble> loadNobles(String fileName) {
+        var csvStream = CardCsvReader.class
+                .getClassLoader()
+                .getResourceAsStream(fileName);
+
+        if (csvStream == null) {
+            throw new IllegalStateException("cards.csv not found on classpath");
         }
 
         List<Noble> nobles = new ArrayList<>();
 
-        try (var reader = Files.newBufferedReader(filePath, StandardCharsets.UTF_8)) {
+        try (var reader = new BufferedReader(new InputStreamReader(csvStream, StandardCharsets.UTF_8))) {
             // skip useless line
             reader.readLine();
 
@@ -54,7 +60,7 @@ public class NobleCsvReader {
                 nobles.add(noble);
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to read CSV file: " + filePath, e);
+            throw new IllegalStateException("Failed to read CSV file: " + fileName, e);
         }
 
         Collections.shuffle(nobles);

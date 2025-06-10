@@ -3,7 +3,10 @@ package src.model.utils;
 import src.model.GemBank;
 import src.model.cards.Card;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,16 +25,21 @@ public class CardCsvReader {
     private static final int RED_COL = 8;
     private static final int BLACK_COL = 9;
 
-    public static EnumMap<Level, List<Card>> loadCards(Path filePath) {
-        if (!Files.isRegularFile(filePath)) {
-            throw new IllegalArgumentException();
+    public static EnumMap<Level, List<Card>> loadCards(String fileName) {
+        var csvStream = CardCsvReader.class
+                .getClassLoader()
+                .getResourceAsStream(fileName);
+
+        if (csvStream == null) {
+            throw new IllegalStateException("cards.csv not found on classpath");
         }
+
         Map<Level, List<Card>> result = new EnumMap<>(Level.class);
         for (Level lvl : Level.values()) {
             result.put(lvl, new ArrayList<>());
         }
 
-        try (var reader = Files.newBufferedReader(filePath, StandardCharsets.UTF_8)) {
+        try (var reader = new BufferedReader(new InputStreamReader(csvStream, StandardCharsets.UTF_8))) {
             // skip useless line
             reader.readLine();
             reader.readLine();

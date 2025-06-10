@@ -23,7 +23,7 @@ public class TerminalView implements View {
         currentStateStringBuilder
                 .append("État du jeu :\n")
                 .append("Tour du joueur n° ")
-                .append(game.currentPlayerIndex())
+                .append(game.currentPlayerIndex() + 1)
                 .append("\n")
                 .append(game);
         System.out.println(currentStateStringBuilder);

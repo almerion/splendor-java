@@ -16,7 +16,7 @@ public class BoughtCardsView {
         }
 
         var rectWidth = Math.round(w * 0.6f);
-        var rectHeight = Math.round(h * 0.2f);
+        var rectHeight = Math.round(h * 0.3f);
         var x = 0;
         var y = h - rectHeight;
 
@@ -34,7 +34,7 @@ public class BoughtCardsView {
         }
 
         var cardWidth = rectWidth / 10;
-        var cardHeight = rectHeight / 2;
+        var cardHeight = rectHeight / 3;
         var xOffset = rect.x;
         var yOffset = rect.y;
 

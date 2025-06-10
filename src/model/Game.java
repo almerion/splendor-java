@@ -278,7 +278,7 @@ public class Game {
     public boolean currentPlayerHasTooManyGems() {
         var currentPlayer = getCurrentPlayer();
         var gems = currentPlayer.gems();
-        return false && gems.getBank().values().stream().mapToInt(Integer::intValue).sum() > 10;
+        return gems.getBank().values().stream().mapToInt(Integer::intValue).sum() > 10;
     }
 
     public boolean isGameOver() {

@@ -132,7 +132,7 @@ public class ZenView implements View {
         });
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -159,7 +159,7 @@ public class ZenView implements View {
         });
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -182,7 +182,7 @@ public class ZenView implements View {
             UiUtils.centerText(g2d, "Nombre de joueurs invalide : " + numberOfPlayers, w, h);
         });
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
